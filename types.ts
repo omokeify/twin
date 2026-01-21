@@ -12,6 +12,7 @@ export interface CelebrityMatch {
   matchReason: string;
   destinyPrediction: string;
   predictedLegacyYear: number;
+  funFacts: string[];
 }
 
 export enum AppStep {

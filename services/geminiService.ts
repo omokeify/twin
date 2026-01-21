@@ -35,6 +35,7 @@ export const findCelebrityMatch = async (
     3. Generate a short, mystical bio for this celebrity.
     4. Explain why the user and this celebrity are "soul siblings" based on the personality traits.
     5. Playfully and mystically predict a "Legacy Year" or "End of Era" year for the user (not necessarily death, but a major transformation or conclusion of their current life path) based on astrological or numerological vibes of the celebrity's life path. Keep it mysterious but safe (PG-13).
+    6. Provide 3 interesting, lesser-known facts about this celebrity to surprise the user.
   `;
 
   try {
@@ -53,8 +54,13 @@ export const findCelebrityMatch = async (
             matchReason: { type: Type.STRING, description: "Why the user's traits match this person." },
             destinyPrediction: { type: Type.STRING, description: "A mystical prediction about the 'end' or 'transformation' of their timeline." },
             predictedLegacyYear: { type: Type.INTEGER, description: "A specific future year for this major event." },
+            funFacts: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+              description: "3 interesting lesser-known facts about the celebrity."
+            },
           },
-          required: ["name", "birthDate", "occupation", "bio", "matchReason", "destinyPrediction", "predictedLegacyYear"],
+          required: ["name", "birthDate", "occupation", "bio", "matchReason", "destinyPrediction", "predictedLegacyYear", "funFacts"],
         },
       },
     });

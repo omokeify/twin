@@ -1,6 +1,6 @@
 import React from 'react';
 import { CelebrityMatch } from '../types';
-import { RefreshCw, Star, Clock, AlertTriangle } from 'lucide-react';
+import { RefreshCw, Star, Clock, AlertTriangle, Sparkles } from 'lucide-react';
 
 interface StepResultProps {
   match: CelebrityMatch;
@@ -15,7 +15,7 @@ const StepResult: React.FC<StepResultProps> = ({ match, userDate, onReset }) => 
   const birthDayDisplay = dateObj.toLocaleDateString('default', { month: 'long', day: 'numeric' });
 
   return (
-    <div className="glass-panel p-8 rounded-2xl shadow-2xl max-h-[85vh] overflow-y-auto custom-scrollbar">
+    <div className="glass-panel p-8 rounded-2xl shadow-2xl max-h-[85vh] overflow-y-auto custom-scrollbar w-full max-w-3xl">
       <div className="text-center mb-8">
         <span className="inline-block px-3 py-1 bg-purple-500/20 rounded-full text-purple-300 text-xs tracking-widest uppercase mb-4 border border-purple-500/30">
           Cosmic Connection Found
@@ -46,6 +46,23 @@ const StepResult: React.FC<StepResultProps> = ({ match, userDate, onReset }) => 
           </p>
         </div>
       </div>
+
+      {/* New Section: Interesting Facts */}
+      {match.funFacts && match.funFacts.length > 0 && (
+        <div className="bg-black/20 p-6 rounded-xl border border-white/5 mb-8">
+          <h3 className="text-lg font-serif text-yellow-200 mb-4 flex items-center gap-2">
+            <Sparkles className="w-4 h-4" /> Stellar Secrets
+          </h3>
+          <ul className="space-y-3">
+            {match.funFacts.map((fact, index) => (
+              <li key={index} className="flex gap-3 text-sm text-gray-300 leading-relaxed">
+                <span className="text-purple-400 mt-1">•</span>
+                <span>{fact}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="bg-gradient-to-br from-indigo-900/40 to-purple-900/40 p-6 rounded-xl border border-purple-500/20 mb-8 relative overflow-hidden group">
         <div className="absolute inset-0 bg-purple-500/5 group-hover:bg-purple-500/10 transition-colors"></div>
