@@ -9,7 +9,10 @@ interface StepResultProps {
 }
 
 const StepResult: React.FC<StepResultProps> = ({ match, userDate, onReset }) => {
-  const birthDayDisplay = new Date(userDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+  // Fix: Parse manually to ensure we display the exact date the user entered, ignoring timezone
+  const [yearStr, monthStr, dayStr] = userDate.split('-');
+  const dateObj = new Date(parseInt(yearStr), parseInt(monthStr) - 1, parseInt(dayStr));
+  const birthDayDisplay = dateObj.toLocaleDateString('default', { month: 'long', day: 'numeric' });
 
   return (
     <div className="glass-panel p-8 rounded-2xl shadow-2xl max-h-[85vh] overflow-y-auto custom-scrollbar">

@@ -4,7 +4,7 @@ import { CelebrityMatch } from "../types";
 const getClient = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
-    throw new Error("API Key not found");
+    throw new Error("API Key not found. Please check your environment variables.");
   }
   return new GoogleGenAI({ apiKey });
 };
@@ -14,16 +14,23 @@ export const findCelebrityMatch = async (
   traits: string[]
 ): Promise<CelebrityMatch> => {
   const ai = getClient();
-  const dateObj = new Date(birthDate);
-  const month = dateObj.toLocaleString('default', { month: 'long' });
-  const day = dateObj.getDate();
+  
+  // Fix: Parse YYYY-MM-DD manually to avoid UTC timezone shifts causing off-by-one day errors
+  const [yearStr, monthStr, dayStr] = birthDate.split('-');
+  const monthIndex = parseInt(monthStr, 10) - 1; // JS months are 0-indexed
+  const day = parseInt(dayStr, 10);
+  const year = parseInt(yearStr, 10);
+  
+  // Create date object using local time components
+  const dateObj = new Date(year, monthIndex, day);
+  const monthName = dateObj.toLocaleString('default', { month: 'long' });
 
   const prompt = `
-    The user was born on ${month} ${day}. 
+    The user was born on ${monthName} ${day}. 
     Their personality traits are: ${traits.join(', ')}.
     
     Task:
-    1. Find a famous celebrity (actor, musician, historical figure, etc.) who was born on EXACTLY ${month} ${day}.
+    1. Find a famous celebrity (actor, musician, historical figure, etc.) who was born on EXACTLY ${monthName} ${day}.
     2. Analyze the user's traits and select the celebrity born on this day who best matches these vibes.
     3. Generate a short, mystical bio for this celebrity.
     4. Explain why the user and this celebrity are "soul siblings" based on the personality traits.
