@@ -4,12 +4,18 @@ export interface UserData {
   personalityTraits: string[];
 }
 
+export interface AlignmentTrait {
+  trait: string;
+  connection: string;
+}
+
 export interface CelebrityMatch {
   name: string;
   birthDate: string; // Text description e.g. "January 15, 1965"
   occupation: string;
   bio: string;
-  matchReason: string;
+  matchReason: string; // Summary
+  alignmentTraits: AlignmentTrait[]; // Specific parallels
   destinyPrediction: string;
   predictedLegacyYear: number;
   funFacts: string[];
