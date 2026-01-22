@@ -17,7 +17,7 @@ const StepDate: React.FC<StepDateProps> = ({ onNext }) => {
   };
 
   return (
-    <div className="glass-panel p-8 rounded-2xl shadow-2xl animate-float">
+    <div className="glass-panel p-8 rounded-2xl shadow-2xl animate-float max-w-2xl w-full mx-auto">
       <div className="text-center mb-8">
         <div className="mx-auto w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mb-4 border border-purple-400/30">
           <Calendar className="w-8 h-8 text-purple-300" />
