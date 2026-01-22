@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CelebrityMatch } from '../types';
-import { Star, Clock, AlertTriangle, Sparkles, Link as LinkIcon, ArrowLeft, Hourglass, ShieldAlert, Sword, Flame } from 'lucide-react';
+import { Star, Clock, AlertTriangle, Sparkles, Link as LinkIcon, ArrowLeft, Hourglass, ShieldAlert, Sword, Flame, Share2, Copy, Check, Twitter, Facebook } from 'lucide-react';
 
 interface StepResultProps {
   match: CelebrityMatch;
@@ -10,6 +10,42 @@ interface StepResultProps {
 }
 
 const StepResult: React.FC<StepResultProps> = ({ match, userDate, onReset, onBack }) => {
+  const [copied, setCopied] = useState(false);
+
+  const getShareText = () => {
+    return `I discovered my cosmic birthday twin is ${match.name}! ✨\n\n"${match.matchReason}"\n\nFind yours here:`;
+  };
+
+  const handleCopy = () => {
+    const text = `${getShareText()} ${window.location.href}`;
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleShare = (platform: 'twitter' | 'facebook' | 'whatsapp' | 'linkedin') => {
+    const text = encodeURIComponent(getShareText());
+    const url = encodeURIComponent(window.location.href);
+    
+    let link = '';
+    switch (platform) {
+      case 'twitter':
+        link = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+        break;
+      case 'facebook':
+        link = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+        break;
+      case 'whatsapp':
+        link = `https://wa.me/?text=${text}%20${url}`;
+        break;
+      case 'linkedin':
+        link = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
+        break;
+    }
+    
+    window.open(link, '_blank');
+  };
+
   return (
     <div className="glass-panel p-8 rounded-2xl shadow-2xl max-h-[85vh] overflow-y-auto custom-scrollbar w-full max-w-4xl relative animate-fade-in">
       <button 
@@ -176,6 +212,51 @@ const StepResult: React.FC<StepResultProps> = ({ match, userDate, onReset, onBac
             </div>
           </div>
         )}
+      </div>
+
+      {/* Share Section */}
+      <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-8 text-center relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+          <Share2 className="w-32 h-32 text-white" />
+        </div>
+        <h3 className="text-lg font-serif text-white mb-2 flex items-center justify-center gap-2 relative z-10">
+          <Share2 className="w-5 h-5 text-purple-400" /> Share Your Cosmic Match
+        </h3>
+        <p className="text-sm text-gray-400 mb-6 max-w-lg mx-auto relative z-10">
+          Spread the wisdom. Share your celebrity match and the lesson you've learned.
+        </p>
+        
+        <div className="flex flex-wrap justify-center gap-3 relative z-10">
+            <button 
+              onClick={() => handleShare('twitter')}
+              className="bg-[#1DA1F2]/20 hover:bg-[#1DA1F2]/30 text-[#1DA1F2] border border-[#1DA1F2]/30 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-sm font-medium"
+            >
+              <Twitter className="w-4 h-4" /> Twitter
+            </button>
+            <button 
+              onClick={() => handleShare('facebook')}
+              className="bg-[#1877F2]/20 hover:bg-[#1877F2]/30 text-[#1877F2] border border-[#1877F2]/30 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-sm font-medium"
+            >
+              <Facebook className="w-4 h-4" /> Facebook
+            </button>
+            <button 
+              onClick={() => handleShare('whatsapp')}
+              className="bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] border border-[#25D366]/30 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-sm font-medium"
+            >
+              <Share2 className="w-4 h-4" /> WhatsApp
+            </button>
+            <button 
+              onClick={handleCopy}
+              className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all text-sm font-medium border ${
+                copied 
+                  ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+                  : 'bg-white/10 hover:bg-white/20 text-gray-300 border-white/10'
+              }`}
+            >
+              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              {copied ? 'Copied!' : 'Copy Link'}
+            </button>
+        </div>
       </div>
 
       <button

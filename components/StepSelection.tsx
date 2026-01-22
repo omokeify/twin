@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CelebrityMatch, NameAnalysis } from '../types';
-import { Skull, HeartPulse, ChevronRight, Sparkles, BookOpen } from 'lucide-react';
+import { Skull, HeartPulse, ChevronRight, Sparkles, BookOpen, Loader2 } from 'lucide-react';
 
 interface StepSelectionProps {
   matches: CelebrityMatch[];
@@ -11,6 +11,18 @@ interface StepSelectionProps {
 }
 
 const StepSelection: React.FC<StepSelectionProps> = ({ matches, analysis, userName, onSelect, onBack }) => {
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  const handleSelect = (match: CelebrityMatch) => {
+    if (loadingId) return; // Prevent multiple clicks
+    setLoadingId(match.id);
+    
+    // Artificial delay to provide visual feedback and build suspense
+    setTimeout(() => {
+      onSelect(match);
+    }, 1500);
+  };
+
   return (
     <div className="w-full max-w-4xl animate-fade-in">
       
@@ -48,9 +60,23 @@ const StepSelection: React.FC<StepSelectionProps> = ({ matches, analysis, userNa
         {matches.map((match) => (
           <button
             key={match.id}
-            onClick={() => onSelect(match)}
-            className="flex flex-col h-full bg-glass-panel border border-white/10 rounded-xl p-6 hover:bg-white/5 hover:border-purple-500/50 hover:transform hover:scale-[1.02] transition-all group text-left relative overflow-hidden"
+            onClick={() => handleSelect(match)}
+            disabled={loadingId !== null}
+            className={`flex flex-col h-full bg-glass-panel border border-white/10 rounded-xl p-6 transition-all group text-left relative overflow-hidden ${
+              loadingId === match.id 
+                ? 'bg-purple-900/20 border-purple-500/50 scale-[1.02]' 
+                : loadingId !== null 
+                  ? 'opacity-50 grayscale cursor-not-allowed' 
+                  : 'hover:bg-white/5 hover:border-purple-500/50 hover:transform hover:scale-[1.02]'
+            }`}
           >
+            {loadingId === match.id && (
+              <div className="absolute inset-0 z-20 bg-black/60 backdrop-blur-[2px] flex flex-col items-center justify-center animate-fade-in">
+                <Loader2 className="w-10 h-10 text-purple-400 animate-spin mb-3" />
+                <span className="text-xs font-serif text-purple-200 tracking-widest uppercase animate-pulse">Aligning Fate...</span>
+              </div>
+            )}
+
             <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             
             <div className="flex justify-between items-start mb-4">
@@ -85,7 +111,8 @@ const StepSelection: React.FC<StepSelectionProps> = ({ matches, analysis, userNa
       <div className="text-center">
         <button 
           onClick={onBack}
-          className="text-gray-500 hover:text-white transition-colors text-sm underline underline-offset-4"
+          disabled={loadingId !== null}
+          className={`text-gray-500 hover:text-white transition-colors text-sm underline underline-offset-4 ${loadingId ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           Consult the stars again
         </button>
