@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CelebrityMatch } from '../types';
-import { Star, Clock, AlertTriangle, Sparkles, Link as LinkIcon, ArrowLeft, Hourglass, ShieldAlert, Sword, Flame, Share2, Copy, Check, Twitter, Facebook } from 'lucide-react';
+import { Star, Clock, AlertTriangle, Sparkles, Link as LinkIcon, ArrowLeft, Hourglass, ShieldAlert, Sword, Flame, Share2, Copy, Check, Twitter, Facebook, Ghost } from 'lucide-react';
 
 interface StepResultProps {
   match: CelebrityMatch;
@@ -157,6 +157,31 @@ const StepResult: React.FC<StepResultProps> = ({ match, userDate, onReset, onBac
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+      
+      {/* The Final Veil - Cosmic Lifespan */}
+      {match.cosmicLifespan && (
+        <div className="bg-black/40 p-6 rounded-xl border border-white/5 mb-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-5">
+            <Ghost className="w-32 h-32 text-white" />
+          </div>
+          <h3 className="text-xl font-serif text-gray-200 mb-4 flex items-center gap-2 relative z-10">
+            <Ghost className="w-5 h-5 text-gray-400" /> The Final Veil
+          </h3>
+          
+          <div className="flex flex-col md:flex-row items-center gap-6 relative z-10">
+             <div className="bg-white/5 px-6 py-4 rounded-lg text-center border border-white/10 min-w-[150px]">
+                <span className="block text-xs text-gray-500 uppercase tracking-widest mb-1">Cosmic Lifespan</span>
+                <span className="text-3xl font-serif text-white">{match.cosmicLifespan}</span>
+             </div>
+             <div className="flex-1">
+               <span className="text-xs text-purple-400 uppercase tracking-widest font-bold mb-1 block">A Spicy Mystery Note</span>
+               <p className="text-gray-300 italic font-medium leading-relaxed">
+                 "{match.mysteryNote}"
+               </p>
+             </div>
           </div>
         </div>
       )}

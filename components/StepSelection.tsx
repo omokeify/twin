@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CelebrityMatch, NameAnalysis } from '../types';
-import { Skull, HeartPulse, ChevronRight, Sparkles, BookOpen, Loader2 } from 'lucide-react';
+import { Skull, HeartPulse, ChevronRight, Sparkles, BookOpen, Loader2, ExternalLink } from 'lucide-react';
 
 interface StepSelectionProps {
   matches: CelebrityMatch[];
@@ -58,11 +58,9 @@ const StepSelection: React.FC<StepSelectionProps> = ({ matches, analysis, userNa
 
       <div className="grid md:grid-cols-3 gap-6 mb-8">
         {matches.map((match) => (
-          <button
+          <div
             key={match.id}
-            onClick={() => handleSelect(match)}
-            disabled={loadingId !== null}
-            className={`flex flex-col h-full bg-glass-panel border border-white/10 rounded-xl p-6 transition-all group text-left relative overflow-hidden ${
+            className={`flex flex-col h-full bg-glass-panel border border-white/10 rounded-xl transition-all group text-left relative overflow-hidden ${
               loadingId === match.id 
                 ? 'bg-purple-900/20 border-purple-500/50 scale-[1.02]' 
                 : loadingId !== null 
@@ -79,32 +77,51 @@ const StepSelection: React.FC<StepSelectionProps> = ({ matches, analysis, userNa
 
             <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             
-            <div className="flex justify-between items-start mb-4">
-              <div className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider font-bold ${
-                match.status === 'deceased' ? 'bg-purple-900/50 text-purple-300' : 'bg-blue-900/50 text-blue-300'
-              }`}>
-                {match.status === 'deceased' ? (
-                  <span className="flex items-center gap-1"><Skull className="w-3 h-3" /> Legacy</span>
-                ) : (
-                  <span className="flex items-center gap-1"><HeartPulse className="w-3 h-3" /> Living</span>
-                )}
-              </div>
-            </div>
-            
-            <h3 className="text-xl font-serif text-white mb-1 group-hover:text-purple-300 transition-colors">
-              {match.name}
-            </h3>
-            <p className="text-xs text-gray-500 mb-4 uppercase tracking-wide">{match.occupation}</p>
-            
-            <p className="text-sm text-gray-300 line-clamp-4 flex-grow mb-4">
-              {match.matchReason}
-            </p>
+            {/* Learn More External Link - Positioned Top Right */}
+            <a
+              href={`https://www.google.com/search?q=${encodeURIComponent(match.name + ' celebrity')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute top-4 right-4 p-2 bg-white/5 hover:bg-white/20 text-gray-400 hover:text-white rounded-full transition-colors z-20"
+              title="Learn more on Google"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
 
-            <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between text-xs text-gray-400 group-hover:text-white">
-              <span>View Cosmic Prophecy</span>
-              <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-1" />
-            </div>
-          </button>
+            {/* Main Clickable Content */}
+            <button
+              onClick={() => handleSelect(match)}
+              disabled={loadingId !== null}
+              className="flex-1 p-6 flex flex-col w-full text-left"
+            >
+              <div className="flex justify-between items-start mb-4 w-full">
+                <div className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider font-bold ${
+                  match.status === 'deceased' ? 'bg-purple-900/50 text-purple-300' : 'bg-blue-900/50 text-blue-300'
+                }`}>
+                  {match.status === 'deceased' ? (
+                    <span className="flex items-center gap-1"><Skull className="w-3 h-3" /> Legacy</span>
+                  ) : (
+                    <span className="flex items-center gap-1"><HeartPulse className="w-3 h-3" /> Living</span>
+                  )}
+                </div>
+              </div>
+              
+              <h3 className="text-xl font-serif text-white mb-1 group-hover:text-purple-300 transition-colors pr-6">
+                {match.name}
+              </h3>
+              <p className="text-xs text-gray-500 mb-4 uppercase tracking-wide">{match.occupation}</p>
+              
+              <p className="text-sm text-gray-300 line-clamp-4 flex-grow mb-4">
+                {match.matchReason}
+              </p>
+
+              <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between text-xs text-gray-400 group-hover:text-white w-full">
+                <span>View Cosmic Prophecy</span>
+                <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-1" />
+              </div>
+            </button>
+          </div>
         ))}
       </div>
 

@@ -5,8 +5,10 @@ import StepPersonality from './components/StepPersonality';
 import StepPreference from './components/StepPreference';
 import StepSelection from './components/StepSelection';
 import StepResult from './components/StepResult';
+import AdminDashboard from './components/AdminDashboard';
 import { AppStep, CelebrityMatch, UserData, NameAnalysis } from './types';
 import { findCelebrityMatches } from './services/geminiService';
+import { saveVisit } from './services/storageService';
 import { Loader2, AlertCircle } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -75,6 +77,8 @@ const App: React.FC = () => {
 
   const handleMatchSelect = (match: CelebrityMatch) => {
     setSelectedMatch(match);
+    // Save to local metrics
+    saveVisit(userData, match.name);
     setStep(AppStep.RESULT);
   };
 
@@ -95,7 +99,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <Layout>
+    <Layout onAdminClick={() => setStep(AppStep.ADMIN)}>
       {step === AppStep.WELCOME && (
         <div className="text-center animate-fade-in">
           <h1 className="text-5xl md:text-7xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-300 to-indigo-300 mb-4 animate-pulse-slow">
@@ -145,6 +149,10 @@ const App: React.FC = () => {
           onReset={handleReset} 
           onBack={() => setStep(AppStep.SELECTION)}
         />
+      )}
+
+      {step === AppStep.ADMIN && (
+        <AdminDashboard onExit={() => setStep(AppStep.WELCOME)} />
       )}
 
       {step === AppStep.ERROR && (

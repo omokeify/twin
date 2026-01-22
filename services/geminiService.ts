@@ -27,7 +27,7 @@ export const findCelebrityMatches = async (
   const dateObj = new Date(year, monthIndex, day);
   const monthName = dateObj.toLocaleString('default', { month: 'long' });
 
-  // Prompt focused on Name Meaning + Name Matches + Life Lessons + Spiritual Nemesis
+  // Prompt focused on Name Meaning + Name Matches + Life Lessons + Spiritual Nemesis + Lifespan Mystery
   const prompt = `
     User Name: "${name}"
     User Birth Date: ${monthName} ${day}
@@ -64,6 +64,9 @@ export const findCelebrityMatches = async (
       - Explain how this force manifests in their life to stop them from reaching greatness.
     - **Fun Facts**:
       - Provide **exactly 5 distinct, lesser-known, and engaging fun facts** about this person. Avoid generic facts. Focus on quirks, hidden talents, or strange coincidences.
+    - **Cosmic Lifespan & Mystery Note**:
+      - **Cosmic Lifespan**: Based on the celebrity's vitality and the user's traits, predict a lifespan (e.g. "92 Years"). 
+      - **Mystery Note**: A spicy, funny, or mysterious condition regarding their longevity or "the end". (e.g., "You will reach 92, provided you never accept a gift of red shoes.", "Your timeline ends only when you stop dancing.", "Beware of Tuesdays in November."). Be creative, witty, and entertaining.
 
     Return JSON format only.
   `;
@@ -129,8 +132,10 @@ export const findCelebrityMatches = async (
                     items: { type: Type.STRING },
                     description: "Exactly 5 lesser-known and engaging fun facts."
                   },
+                  cosmicLifespan: { type: Type.STRING, description: "Predicted lifespan, e.g. '88 Years'." },
+                  mysteryNote: { type: Type.STRING, description: "A spicy, mysterious note about their longevity." }
                 },
-                required: ["id", "name", "birthDate", "occupation", "status", "matchReason", "alignmentTraits", "destinyPrediction", "predictedLegacyYear", "legacyLabel", "lifeLessons", "spiritualNemesis", "nemesisManifestation", "funFacts"]
+                required: ["id", "name", "birthDate", "occupation", "status", "matchReason", "alignmentTraits", "destinyPrediction", "predictedLegacyYear", "legacyLabel", "lifeLessons", "spiritualNemesis", "nemesisManifestation", "funFacts", "cosmicLifespan", "mysteryNote"]
               }
             }
           },

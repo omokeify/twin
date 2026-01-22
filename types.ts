@@ -39,6 +39,8 @@ export interface CelebrityMatch {
   spiritualNemesis: string; // The specific force fighting their potential
   nemesisManifestation: string; // How this force operates
   funFacts: string[]; // List of at least 5 lesser-known, engaging facts
+  cosmicLifespan: string; // e.g. "88 Years"
+  mysteryNote: string; // A spicy, mysterious note about their end/longevity
 }
 
 export interface MatchResponse {
@@ -54,11 +56,24 @@ export enum AppStep {
   LOADING = 'LOADING',
   SELECTION = 'SELECTION',
   RESULT = 'RESULT',
-  ERROR = 'ERROR'
+  ERROR = 'ERROR',
+  ADMIN = 'ADMIN'
 }
 
 export interface PersonalityTrait {
   id: string;
   label: string;
   icon: string;
+}
+
+export interface UserRecord {
+  id: string;
+  timestamp: number;
+  name: string;
+  birthDate: string;
+  traits: string[];
+  matchName: string;
+  region: string;
+  gender: string;
+  statusPreference: string;
 }
