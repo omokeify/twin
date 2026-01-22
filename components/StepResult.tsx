@@ -13,7 +13,8 @@ const StepResult: React.FC<StepResultProps> = ({ match, userDate, onReset, onBac
   const [copied, setCopied] = useState(false);
 
   const getShareText = () => {
-    return `I discovered my cosmic birthday twin is ${match.name}! ✨\n\n"${match.matchReason}"\n\nFind yours here:`;
+    const platformTagline = "Cosmic Birthday Mate — Where your birth date meets destiny. Discover your celebrity soul connection.";
+    return `I discovered my cosmic birthday twin is ${match.name}! ✨\n\n"${match.matchReason}"\n\n${platformTagline}\n\nFind yours here:`;
   };
 
   const handleCopy = () => {
@@ -33,7 +34,8 @@ const StepResult: React.FC<StepResultProps> = ({ match, userDate, onReset, onBac
         link = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
         break;
       case 'facebook':
-        link = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+        // Facebook primarily uses OG tags for content, but we can try passing the quote
+        link = `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`;
         break;
       case 'whatsapp':
         link = `https://wa.me/?text=${text}%20${url}`;
