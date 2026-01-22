@@ -4,7 +4,7 @@ import { CelebrityMatch } from "../types";
 const getClient = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
-    throw new Error("API Key not found. Please check your environment variables.");
+    throw new Error("API Key not found. Please add 'API_KEY' to your Vercel Environment Variables in Settings.");
   }
   return new GoogleGenAI({ apiKey });
 };
