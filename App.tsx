@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import Layout from './components/Layout';
 import StepDate from './components/StepDate';
 import StepPersonality from './components/StepPersonality';
+import StepPreference from './components/StepPreference';
+import StepSelection from './components/StepSelection';
 import StepResult from './components/StepResult';
-import { AppStep, CelebrityMatch, UserData } from './types';
-import { findCelebrityMatch } from './services/geminiService';
+import { AppStep, CelebrityMatch, UserData, NameAnalysis } from './types';
+import { findCelebrityMatches } from './services/geminiService';
 import { Loader2, AlertCircle } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -12,9 +14,14 @@ const App: React.FC = () => {
   const [userData, setUserData] = useState<UserData>({
     birthDate: '',
     name: '',
-    personalityTraits: []
+    personalityTraits: [],
+    preference: 'all',
+    genderPreference: 'any',
+    regionPreference: 'global'
   });
-  const [match, setMatch] = useState<CelebrityMatch | null>(null);
+  const [matches, setMatches] = useState<CelebrityMatch[]>([]);
+  const [nameAnalysis, setNameAnalysis] = useState<NameAnalysis | null>(null);
+  const [selectedMatch, setSelectedMatch] = useState<CelebrityMatch | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Initial animation delay
@@ -30,14 +37,31 @@ const App: React.FC = () => {
     setStep(AppStep.PERSONALITY);
   };
 
-  const handlePersonalitySubmit = async (traits: string[]) => {
+  const handlePersonalitySubmit = (traits: string[]) => {
     setUserData(prev => ({ ...prev, personalityTraits: traits }));
+    setStep(AppStep.PREFERENCE);
+  };
+
+  const handlePreferenceSubmit = async (
+    preference: 'living' | 'deceased' | 'all', 
+    gender: 'male' | 'female' | 'any',
+    region: 'africa' | 'asia' | 'europe' | 'north_america' | 'south_america' | 'oceania' | 'global'
+  ) => {
+    setUserData(prev => ({ ...prev, preference, genderPreference: gender, regionPreference: region }));
     setStep(AppStep.LOADING);
     
     try {
-      const result = await findCelebrityMatch(userData.birthDate, traits);
-      setMatch(result);
-      setStep(AppStep.RESULT);
+      const response = await findCelebrityMatches(
+        userData.birthDate, 
+        userData.name,
+        userData.personalityTraits, 
+        preference, 
+        gender, 
+        region
+      );
+      setMatches(response.matches);
+      setNameAnalysis(response.analysis);
+      setStep(AppStep.SELECTION);
     } catch (err: any) {
       console.error(err);
       if (err.message && err.message.includes("API Key")) {
@@ -49,9 +73,23 @@ const App: React.FC = () => {
     }
   };
 
+  const handleMatchSelect = (match: CelebrityMatch) => {
+    setSelectedMatch(match);
+    setStep(AppStep.RESULT);
+  };
+
   const handleReset = () => {
-    setUserData({ birthDate: '', name: '', personalityTraits: [] });
-    setMatch(null);
+    setUserData({ 
+      birthDate: '', 
+      name: '', 
+      personalityTraits: [], 
+      preference: 'all', 
+      genderPreference: 'any',
+      regionPreference: 'global' 
+    });
+    setMatches([]);
+    setNameAnalysis(null);
+    setSelectedMatch(null);
     setError(null);
     setStep(AppStep.DATE_INPUT);
   };
@@ -78,19 +116,34 @@ const App: React.FC = () => {
         />
       )}
 
+      {step === AppStep.PREFERENCE && (
+        <StepPreference onSelect={handlePreferenceSubmit} />
+      )}
+
       {step === AppStep.LOADING && (
         <div className="text-center glass-panel p-12 rounded-2xl flex flex-col items-center justify-center min-h-[400px]">
           <Loader2 className="w-16 h-16 text-purple-400 animate-spin mb-6" />
-          <h3 className="text-2xl font-serif text-white mb-2">Consulting the Archives</h3>
-          <p className="text-gray-400 animate-pulse">Scanning birthdays across history...</p>
+          <h3 className="text-2xl font-serif text-white mb-2">Unlocking the Name</h3>
+          <p className="text-gray-400 animate-pulse">Consulting the ancient scrolls for "{userData.name}"...</p>
         </div>
       )}
 
-      {step === AppStep.RESULT && match && (
+      {step === AppStep.SELECTION && matches.length > 0 && nameAnalysis && (
+        <StepSelection 
+          matches={matches} 
+          analysis={nameAnalysis}
+          userName={userData.name}
+          onSelect={handleMatchSelect}
+          onBack={handleReset}
+        />
+      )}
+
+      {step === AppStep.RESULT && selectedMatch && (
         <StepResult 
-          match={match} 
+          match={selectedMatch} 
           userDate={userData.birthDate} 
           onReset={handleReset} 
+          onBack={() => setStep(AppStep.SELECTION)}
         />
       )}
 

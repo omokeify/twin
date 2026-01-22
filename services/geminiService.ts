@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { CelebrityMatch } from "../types";
+import { MatchResponse } from "../types";
 
 const getClient = () => {
   const apiKey = process.env.API_KEY;
@@ -9,34 +9,63 @@ const getClient = () => {
   return new GoogleGenAI({ apiKey });
 };
 
-export const findCelebrityMatch = async (
+export const findCelebrityMatches = async (
   birthDate: string,
-  traits: string[]
-): Promise<CelebrityMatch> => {
+  name: string,
+  traits: string[],
+  preference: 'living' | 'deceased' | 'all',
+  genderPreference: 'male' | 'female' | 'any',
+  regionPreference: 'africa' | 'asia' | 'europe' | 'north_america' | 'south_america' | 'oceania' | 'global'
+): Promise<MatchResponse> => {
   const ai = getClient();
   
-  // Fix: Parse YYYY-MM-DD manually to avoid UTC timezone shifts causing off-by-one day errors
   const [yearStr, monthStr, dayStr] = birthDate.split('-');
-  const monthIndex = parseInt(monthStr, 10) - 1; // JS months are 0-indexed
+  const monthIndex = parseInt(monthStr, 10) - 1; 
   const day = parseInt(dayStr, 10);
   const year = parseInt(yearStr, 10);
   
-  // Create date object using local time components
   const dateObj = new Date(year, monthIndex, day);
   const monthName = dateObj.toLocaleString('default', { month: 'long' });
 
+  // Prompt focused on Name Meaning + Name Matches + Life Lessons + Spiritual Nemesis
   const prompt = `
-    The user was born on ${monthName} ${day}. 
-    Their personality traits are: ${traits.join(', ')}.
+    User Name: "${name}"
+    User Birth Date: ${monthName} ${day}
+    User Traits: ${traits.join(', ')}
     
-    Task:
-    1. Find a famous celebrity (actor, musician, historical figure, etc.) who was born on EXACTLY ${monthName} ${day}.
-    2. Analyze the user's traits and select the celebrity born on this day who best matches these vibes.
-    3. Generate a short, mystical bio for this celebrity.
-    4. Analyze the Connection ('alignmentTraits'): For EACH of the user's provided personality traits, identify a specific, concrete example from the celebrity's life (a specific movie role, a public incident, a known habit, a philanthropic action, or a childhood event) that perfectly embodies that trait. 
-    5. Write a 'matchReason' which is a single, poetic sentence summarizing the overall soul-connection.
-    6. Playfully and mystically predict a "Legacy Year" or "End of Era" year for the user (not necessarily death, but a major transformation or conclusion of their current life path) based on astrological or numerological vibes of the celebrity's life path. Keep it mysterious but safe (PG-13).
-    7. Provide 10 interesting, lesser-known facts about this celebrity to surprise the user.
+    Preferences:
+    - Status: ${preference === 'all' ? 'Any' : preference}
+    - Gender: ${genderPreference === 'any' ? 'Any' : genderPreference}
+    - Region: ${regionPreference === 'global' ? 'Anywhere in the world' : regionPreference.replace('_', ' ')}
+
+    **Objective**:
+    1. Analyze the User's Name ("${name}"): 
+       - Provide its **Specific Origin** (e.g., 'Igbo, Nigeria', 'Ancient Sanskrit', 'Medieval French').
+       - Provide its Meaning and a "Soul Vibration" (a mystical interpretation).
+    2. Identify 3 Celebrities/Famous Figures who **SHARE THE SAME FIRST NAME** (or a close cultural variation/spelling) as "${name}".
+       
+       **Selection Criteria**:
+       - **Priority 1 (Name Match)**: Must share the name "${name}" (e.g., if user is "Michael", find "Michael Jackson", "Michael Jordan", etc.).
+       - **Priority 2 (Region & Gender)**: Filter these name-twins by the selected Region (${regionPreference}) and Gender (${genderPreference}) IF possible. If no name-twins exist in that specific region, widen the region but keep the name match.
+       - **Priority 3 (Fallback)**: If the name is extremely unique and has NO famous matches, find a celebrity whose name has the *exact same meaning* or is known as a "Spirit Twin" born on the user's birthday (${monthName} ${day}).
+       - **Status Preference**: Respect ${preference} if possible.
+
+    **Content Generation**:
+    For each celebrity, provide a deep mystical analysis connecting to the User's Name Meaning AND the User's Birthday.
+    
+    - **Match Reason**: How does this celebrity embody the user's personality traits?
+    - **Destiny Prediction**: Incorporate the user's birthday (${monthName} ${day}) into the prediction.
+    - **Shadow Wisdom (Educational Mistakes)**: Identify 2 specific mistakes, failures, bad decisions, or controversies this person faced. 
+      - Describe the **Mistake**.
+      - Provide the **Lesson** the user should learn to avoid a similar fate.
+    - **Spiritual Nemesis (The Force Fighting Potential)**:
+      - Based on the specific energy/vibration of the name "${name}", identify a metaphorical "Spiritual Force" or "Entity" that constantly tries to fight or block this person's potential.
+      - Give it a creative, dramatic title (e.g., "The Whisperer of Doubt", "The Siren of Complacency", "The Void of Isolation").
+      - Explain how this force manifests in their life to stop them from reaching greatness.
+    - **Fun Facts**:
+      - Provide **exactly 5 distinct, lesser-known, and engaging fun facts** about this person. Avoid generic facts. Focus on quirks, hidden talents, or strange coincidences.
+
+    Return JSON format only.
   `;
 
   try {
@@ -48,36 +77,70 @@ export const findCelebrityMatch = async (
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            name: { type: Type.STRING },
-            birthDate: { type: Type.STRING, description: "The celebrity's full birth date (Month Day, Year)" },
-            occupation: { type: Type.STRING },
-            bio: { type: Type.STRING, description: "A short 2-sentence bio." },
-            matchReason: { type: Type.STRING, description: "A single poetic sentence summarizing the connection." },
-            alignmentTraits: {
+            analysis: {
+              type: Type.OBJECT,
+              properties: {
+                origin: { type: Type.STRING, description: "Specific country, ethnicity, or cultural origin (e.g. 'Yoruba, Nigeria')" },
+                meaning: { type: Type.STRING, description: "Literal meaning of the name" },
+                soulVibration: { type: Type.STRING, description: "Mystical energy description of the name" }
+              },
+              required: ["origin", "meaning", "soulVibration"]
+            },
+            matches: {
               type: Type.ARRAY,
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  trait: { type: Type.STRING, description: "The specific user trait being matched." },
-                  connection: { type: Type.STRING, description: "A detailed example from the celebrity's life matching this trait." }
-                }
+                  id: { type: Type.STRING },
+                  name: { type: Type.STRING },
+                  birthDate: { type: Type.STRING },
+                  occupation: { type: Type.STRING },
+                  status: { type: Type.STRING, enum: ["living", "deceased"] },
+                  eraContext: { type: Type.STRING },
+                  matchReason: { type: Type.STRING },
+                  alignmentTraits: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        trait: { type: Type.STRING },
+                        connection: { type: Type.STRING }
+                      }
+                    }
+                  },
+                  destinyPrediction: { type: Type.STRING },
+                  predictedLegacyYear: { type: Type.INTEGER },
+                  legacyLabel: { type: Type.STRING },
+                  lifeLessons: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        mistake: { type: Type.STRING },
+                        lesson: { type: Type.STRING }
+                      }
+                    },
+                    description: "Two key life lessons based on mistakes."
+                  },
+                  spiritualNemesis: { type: Type.STRING, description: "A dramatic name for the force fighting their potential." },
+                  nemesisManifestation: { type: Type.STRING, description: "How this force blocks their path." },
+                  funFacts: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING },
+                    description: "Exactly 5 lesser-known and engaging fun facts."
+                  },
+                },
+                required: ["id", "name", "birthDate", "occupation", "status", "matchReason", "alignmentTraits", "destinyPrediction", "predictedLegacyYear", "legacyLabel", "lifeLessons", "spiritualNemesis", "nemesisManifestation", "funFacts"]
               }
-            },
-            destinyPrediction: { type: Type.STRING, description: "A mystical prediction about the 'end' or 'transformation' of their timeline." },
-            predictedLegacyYear: { type: Type.INTEGER, description: "A specific future year for this major event." },
-            funFacts: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING },
-              description: "10 interesting lesser-known facts about the celebrity."
-            },
+            }
           },
-          required: ["name", "birthDate", "occupation", "bio", "matchReason", "alignmentTraits", "destinyPrediction", "predictedLegacyYear", "funFacts"],
+          required: ["analysis", "matches"]
         },
       },
     });
 
     if (response.text) {
-      return JSON.parse(response.text) as CelebrityMatch;
+      return JSON.parse(response.text) as MatchResponse;
     } else {
       throw new Error("No response text from Gemini");
     }
