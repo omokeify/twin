@@ -29,6 +29,7 @@ export interface CelebrityMatch {
   birthDate: string;
   occupation: string;
   status: 'living' | 'deceased';
+  matchType: 'Perfect Match' | 'Birthday Twin' | 'Name Twin' | 'Soul Match'; // New field
   eraContext?: string; // Brief note about the era
   matchReason: string;
   alignmentTraits: AlignmentTrait[];

@@ -39,34 +39,31 @@ export const findCelebrityMatches = async (
     - Region: ${regionPreference === 'global' ? 'Anywhere in the world' : regionPreference.replace('_', ' ')}
 
     **Objective**:
-    1. Analyze the User's Name ("${name}"): 
-       - Provide its **Specific Origin** (e.g., 'Igbo, Nigeria', 'Ancient Sanskrit', 'Medieval French').
-       - Provide its Meaning and a "Soul Vibration" (a mystical interpretation).
-    2. Identify 3 Celebrities/Famous Figures who **SHARE THE SAME FIRST NAME** (or a close cultural variation/spelling) as "${name}".
-       
-       **Selection Criteria**:
-       - **Priority 1 (Name Match)**: Must share the name "${name}" (e.g., if user is "Michael", find "Michael Jackson", "Michael Jordan", etc.).
-       - **Priority 2 (Region & Gender)**: Filter these name-twins by the selected Region (${regionPreference}) and Gender (${genderPreference}) IF possible. If no name-twins exist in that specific region, widen the region but keep the name match.
-       - **Priority 3 (Fallback)**: If the name is extremely unique and has NO famous matches, find a celebrity whose name has the *exact same meaning* or is known as a "Spirit Twin" born on the user's birthday (${monthName} ${day}).
-       - **Status Preference**: Respect ${preference} if possible.
-
-    **Content Generation**:
-    For each celebrity, provide a deep mystical analysis connecting to the User's Name Meaning AND the User's Birthday.
+    1. Analyze the User's Name ("${name}"): Provide its origin, meaning, and soul vibration.
+    2. **Generate a list of 6 Celebrity Matches** based on the hierarchy below.
     
-    - **Match Reason**: How does this celebrity embody the user's personality traits?
+    **Scope & Diversity Instructions (CRITICAL)**:
+    - **Expand the 'Database'**: Do NOT limit results to mainstream Hollywood actors/singers. Actively search for **scientists, philosophers, inventors, historical leaders, visual artists, authors, athletes, activists, and niche cultural icons**.
+    - **Era Diversity**: Ensure a mix of contemporary figures (20th-21st century) and historical legends (pre-20th century) if the 'Status' preference allows.
+    - **Global Representation**: If a specific region is requested, strictly prioritize figures from that region. If 'Global' is selected, ensure a diverse mix of nationalities.
+
+    **Selection Hierarchy (Strict Priority)**:
+    - **TIER 1 (Perfect Match)**: A celebrity who shares BOTH the **User's First Name** AND the **User's Birthday** (${monthName} ${day}). This is the holy grail.
+    - **TIER 2 (Birthday Twin)**: A celebrity born strictly on **${monthName} ${day}**. (Year does not matter).
+    - **TIER 3 (Name Twin)**: A celebrity who shares the **User's First Name** (or close variant).
+    - **TIER 4 (Soul Match)**: If exact name/birthday matches are impossible in the requested region/gender, find a "Soul Twin" with very similar personality traits.
+
+    *IMPORTANT*: Try to find at least 1 or 2 matches that share the specific birthday (${monthName} ${day}), regardless of name.
+    
+    **Content Generation per Match**:
+    For each celebrity, provide a deep mystical analysis.
+    - **Match Type**: Label them as 'Perfect Match', 'Birthday Twin', 'Name Twin', or 'Soul Match'.
+    - **Match Reason**: Explain the connection (e.g. "Born on your exact day...", "Shares your name...").
     - **Destiny Prediction**: Incorporate the user's birthday (${monthName} ${day}) into the prediction.
-    - **Shadow Wisdom (Educational Mistakes)**: Identify 2 specific mistakes, failures, bad decisions, or controversies this person faced. 
-      - Describe the **Mistake**.
-      - Provide the **Lesson** the user should learn to avoid a similar fate.
-    - **Spiritual Nemesis (The Force Fighting Potential)**:
-      - Based on the specific energy/vibration of the name "${name}", identify a metaphorical "Spiritual Force" or "Entity" that constantly tries to fight or block this person's potential.
-      - Give it a creative, dramatic title (e.g., "The Whisperer of Doubt", "The Siren of Complacency", "The Void of Isolation").
-      - Explain how this force manifests in their life to stop them from reaching greatness.
-    - **Fun Facts**:
-      - Provide **exactly 5 distinct, lesser-known, and engaging fun facts** about this person. Avoid generic facts. Focus on quirks, hidden talents, or strange coincidences.
-    - **Cosmic Lifespan & Mystery Note**:
-      - **Cosmic Lifespan**: Based on the celebrity's vitality and the user's traits, predict a lifespan (e.g. "92 Years"). 
-      - **Mystery Note**: A spicy, funny, or mysterious condition regarding their longevity or "the end". (e.g., "You will reach 92, provided you never accept a gift of red shoes.", "Your timeline ends only when you stop dancing.", "Beware of Tuesdays in November."). Be creative, witty, and entertaining.
+    - **Shadow Wisdom**: 2 specific mistakes/lessons.
+    - **Spiritual Nemesis**: A dramatic force/entity name fighting their potential.
+    - **Fun Facts**: 5 engaging, lesser-known facts.
+    - **Cosmic Lifespan & Mystery Note**: Predicted lifespan and a mysterious/witty condition.
 
     Return JSON format only.
   `;
@@ -83,7 +80,7 @@ export const findCelebrityMatches = async (
             analysis: {
               type: Type.OBJECT,
               properties: {
-                origin: { type: Type.STRING, description: "Specific country, ethnicity, or cultural origin (e.g. 'Yoruba, Nigeria')" },
+                origin: { type: Type.STRING, description: "Specific country, ethnicity, or cultural origin" },
                 meaning: { type: Type.STRING, description: "Literal meaning of the name" },
                 soulVibration: { type: Type.STRING, description: "Mystical energy description of the name" }
               },
@@ -99,6 +96,7 @@ export const findCelebrityMatches = async (
                   birthDate: { type: Type.STRING },
                   occupation: { type: Type.STRING },
                   status: { type: Type.STRING, enum: ["living", "deceased"] },
+                  matchType: { type: Type.STRING, enum: ["Perfect Match", "Birthday Twin", "Name Twin", "Soul Match"] },
                   eraContext: { type: Type.STRING },
                   matchReason: { type: Type.STRING },
                   alignmentTraits: {
@@ -122,20 +120,18 @@ export const findCelebrityMatches = async (
                         mistake: { type: Type.STRING },
                         lesson: { type: Type.STRING }
                       }
-                    },
-                    description: "Two key life lessons based on mistakes."
+                    }
                   },
-                  spiritualNemesis: { type: Type.STRING, description: "A dramatic name for the force fighting their potential." },
-                  nemesisManifestation: { type: Type.STRING, description: "How this force blocks their path." },
+                  spiritualNemesis: { type: Type.STRING },
+                  nemesisManifestation: { type: Type.STRING },
                   funFacts: {
                     type: Type.ARRAY,
-                    items: { type: Type.STRING },
-                    description: "Exactly 5 lesser-known and engaging fun facts."
+                    items: { type: Type.STRING }
                   },
-                  cosmicLifespan: { type: Type.STRING, description: "Predicted lifespan, e.g. '88 Years'." },
-                  mysteryNote: { type: Type.STRING, description: "A spicy, mysterious note about their longevity." }
+                  cosmicLifespan: { type: Type.STRING },
+                  mysteryNote: { type: Type.STRING }
                 },
-                required: ["id", "name", "birthDate", "occupation", "status", "matchReason", "alignmentTraits", "destinyPrediction", "predictedLegacyYear", "legacyLabel", "lifeLessons", "spiritualNemesis", "nemesisManifestation", "funFacts", "cosmicLifespan", "mysteryNote"]
+                required: ["id", "name", "birthDate", "occupation", "status", "matchType", "matchReason", "alignmentTraits", "destinyPrediction", "predictedLegacyYear", "legacyLabel", "lifeLessons", "spiritualNemesis", "nemesisManifestation", "funFacts", "cosmicLifespan", "mysteryNote"]
               }
             }
           },
